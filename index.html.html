@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Computer Repair & Secondhand Booking App — Single File</title>
+  <style>
+    :root{--bg:#f6f8fb;--card:#fff;--accent:#0b5ed7;--muted:#6b7280;--danger:#dc3545}
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{margin:0;background:var(--bg);color:#111}
+    header{background:linear-gradient(90deg,#0b5ed7 0%,#6f42c1 100%);color:#fff;padding:18px 20px}
+    .wrap{max-width:980px;margin:22px auto;padding:18px}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(13,38,76,0.08);}
+    h1{margin:0;font-size:20px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+    input,textarea,select,button{width:100%;padding:10px;border:1px solid #e6e9ef;border-radius:8px;font-size:14px}
+    textarea{min-height:100px}
+    .muted{color:var(--muted);font-size:13px}
+    .actions{display:flex;gap:10px;align-items:center}
+    button.primary{background:var(--accent);color:#fff;border:none}
+    button.ghost{background:transparent;border:1px solid #e6e9ef}
+    .small{font-size:13px;padding:8px}
+    .list{margin-top:12px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px dashed #eee;text-align:left;font-size:13px}
+    .badge{display:inline-block;padding:6px 8px;border-radius:999px;font-size:12px}
+    .reply{background:#fbfbff;border-left:3px solid #e0e7ff;padding:8px;margin-top:8px;border-radius:6px}
+    .admin-area{display:none}
+    .center{display:flex;align-items:center;gap:8px}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap center" style="justify-content:space-between">
+      <h1>Computer Repair & Secondhand Booking</h1>
+      <div style="font-size:13px">Single-file HTML app • No server required</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2 style="margin-bottom:4px">Book Repair / Secondhand Inquiry</h2>
+          <div class="muted">Fill details and press "Book Now". You'll get a Booking ID to check status.</div>
+          <form id="bookingForm" onsubmit="return saveBooking(event)">
+            <div style="margin-top:12px">
+              <label>Full name</label>
+              <input id="name" required />
+            </div>
+            <div style="margin-top:12px">
+              <label>Address</label>
+              <input id="address" required />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+              <div>
+                <label>Mobile number</label>
+                <input id="mobile" required pattern="[0-9+\- ]{6,20}" />
+              </div>
+              <div>
+                <label>Email (optional)</label>
+                <input id="email" type="email" />
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <label>Service type</label>
+              <select id="service">
+                <option>Computer Repair (Onsite)</option>
+                <option>Computer Repair (Pickup / Drop)</option>
+                <option>Secondhand Laptop Inquiry</option>
+                <option>Buy / Sell Used Parts</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div style="margin-top:12px">
+              <label>Details / Problem description</label>
+              <textarea id="details" placeholder="Example: Laptop not booting, screen flicker, need Windows install..."></textarea>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+              <button class="primary small">Book Now</button>
+              <button type="button" class="ghost small" onclick="clearForm()">Clear</button>
+              <div class="muted" style="margin-left:auto">Data stored locally in your browser.</div>
+            </div>
+          </form>
+
+          <div class="list" style="margin-top:14px">
+            <strong>Already booked?</strong>
+            <div class="muted" style="margin-top:6px">Check booking status using Booking ID and mobile number.</div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <input id="checkMobile" placeholder="Mobile number" />
+              <input id="checkId" placeholder="Booking ID" />
+              <button class="small" onclick="checkBooking()">Check</button>
+            </div>
+            <div id="checkResult" style="margin-top:12px"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <h3>How to use</h3>
+          <ul style="margin:8px 0 0 18px;color:var(--muted);font-size:14px">
+            <li>Customer: Fill form → get Booking ID shown after submission.</li>
+            <li>Admin: Open Admin panel (right) → login with preset credentials → view bookings.</li>
+            <li>Admin can reply to bookings; replies are saved locally and visible in admin dashboard.</li>
+            <li>This single-file app stores data in browser <code>localStorage</code>. For production, a server + database is recommended.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <aside>
+        <div class="card">
+          <h3>Admin Portal</h3>
+          <div id="adminBox">
+            <div id="adminLogin">
+              <div class="muted">Login to view bookings and reply.</div>
+              <div style="margin-top:10px">
+                <label>Username</label>
+                <input id="adminUser" value="admin" />
+              </div>
+              <div style="margin-top:10px">
+                <label>Password</label>
+                <input id="adminPass" type="password" />
+              </div>
+              <div style="margin-top:10px;display:flex;gap:8px">
+                <button class="primary small" onclick="adminLogin()">Login</button>
+                <button class="ghost small" onclick="fillDemo()">Fill demo</button>
+              </div>
+              <div style="margin-top:10px;font-size:12px;color:var(--muted)">Default admin credentials: <strong>admin / admin123</strong></div>
+            </div>
+
+            <div id="adminArea" class="admin-area" style="margin-top:10px">
+              <div style="display:flex;gap:8px;align-items:center">
+                <strong>Logged in as <span id="adminNameDisp">admin</span></strong>
+                <div style="margin-left:auto" class="actions">
+                  <button class="small ghost" onclick="exportCSV()">Export CSV</button>
+                  <button class="small ghost" onclick="adminLogout()">Logout</button>
+                </div>
+              </div>
+              <div style="margin-top:10px">
+                <label>Filter by service</label>
+                <select id="filterService" onchange="renderAdmin()">
+                  <option value="all">All</option>
+                </select>
+              </div>
+
+              <div id="bookingsList" class="list" style="margin-top:10px;max-height:480px;overflow:auto"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <h4>Notes</h4>
+          <div class="muted">This app is ready to test locally. To make it multi-user and persistent across devices, you must add a backend (server + database) and email/SMS integration.</div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="card" style="margin-top:18px">
+      <div><strong>Limitations</strong></div>
+      <div class="muted" style="margin-top:6px">Because it's a client-only single-file app, data is saved inside the browser (localStorage). If you clear browser data or open in a different device, data won't be shared. I can help add a Node.js + Firebase or PHP + MySQL backend if you want server storage and email replies.</div>
+    </footer>
+  </main>
+
+  <script>
+    // Simple single-file booking app that uses localStorage for persistence.
+    const STORAGE_KEY = 'cr_bookings_v1';
+    const ADMIN_USER = 'admin';
+    const ADMIN_PASS = 'admin123';
+
+    function loadBookings(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') }catch(e){return []}
+    }
+    function saveBookings(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)) }
+
+    function generateId(){
+      const t = Date.now().toString(36);
+      const r = Math.random().toString(36).slice(2,7);
+      return (t+'-'+r).toUpperCase();
+    }
+
+    function clearForm(){ ['name','address','mobile','email','details'].forEach(id=>document.getElementById(id).value=''); }
+
+    function saveBooking(e){
+      if(e) e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const mobile = document.getElementById('mobile').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const service = document.getElementById('service').value;
+      const details = document.getElementById('details').value.trim();
+      if(!name || !address || !mobile){ alert('Please fill name, address and mobile.'); return false }
+      const bookings = loadBookings();
+      const id = generateId();
+      const booking = { id, name, address, mobile, email, service, details, createdAt: new Date().toISOString(), status: 'New', adminReply: '' };
+      bookings.unshift(booking);
+      saveBookings(bookings);
+      alert('Booking saved! Your Booking ID: ' + id + '\nPlease note it for status check.');
+      clearForm();
+      return false;
+    }
+
+    function checkBooking(){
+      const mobile = document.getElementById('checkMobile').value.trim();
+      const id = document.getElementById('checkId').value.trim().toUpperCase();
+      const out = document.getElementById('checkResult'); out.innerHTML='';
+      if(!mobile || !id){ out.innerHTML='<div class="muted">Enter mobile and booking ID.</div>'; return }
+      const b = loadBookings().find(x=>x.id===id && x.mobile.replace(/\D/g,'')===mobile.replace(/\D/g,''));
+      if(!b){ out.innerHTML='<div style="color:#a00">No booking found. Check Booking ID and Mobile.</div>'; return }
+      out.innerHTML = `<div><strong>Booking ID:</strong> ${b.id}</div>
+        <div><strong>Service:</strong> ${b.service}</div>
+        <div><strong>Status:</strong> <span class="badge">${b.status}</span></div>
+        <div style="margin-top:8px"><strong>Details:</strong><div class="muted">${escapeHtml(b.details||'—')}</div></div>`;
+      if(b.adminReply){ out.innerHTML += `<div class="reply"><strong>Reply from Admin:</strong><div class="muted">${escapeHtml(b.adminReply)}</div></div>` }
+    }
+
+    function escapeHtml(s){ if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+    // Admin
+    function adminLogin(){
+      const user = document.getElementById('adminUser').value.trim();
+      const pass = document.getElementById('adminPass').value;
+      if(user===ADMIN_USER && pass===ADMIN_PASS){
+        sessionStorage.setItem('cr_admin_logged','1');
+        document.getElementById('adminLogin').style.display='none';
+        document.getElementById('adminArea').style.display='block';
+        document.getElementById('adminNameDisp').innerText = user;
+        renderAdmin();
+      } else {
+        alert('Invalid admin credentials. Default: admin / admin123');
+      }
+    }
+
+    function adminLogout(){ sessionStorage.removeItem('cr_admin_logged'); document.getElementById('adminLogin').style.display='block'; document.getElementById('adminArea').style.display='none'; }
+
+    function ensureAdminShown(){ if(sessionStorage.getItem('cr_admin_logged')){ document.getElementById('adminLogin').style.display='none'; document.getElementById('adminArea').style.display='block'; renderAdmin() } }
+
+    function fillDemo(){ // add demo bookings
+      const bookings = loadBookings();
+      for(let i=0;i<3;i++){
+        bookings.unshift({ id:generateId(), name:'Demo User '+(i+1), address:'Demo address '+(i+1), mobile:'99900'+(100+i), email:'demo'+i+'@example.com', service: i===2? 'Secondhand Laptop Inquiry':'Computer Repair (Onsite)', details:'Demo problem description', createdAt:new Date().toISOString(), status:'New', adminReply:'' });
+      }
+      saveBookings(bookings); alert('Demo bookings added. Now login as admin to view.');
+    }
+
+    function renderAdmin(){
+      const list = document.getElementById('bookingsList'); list.innerHTML='';
+      const bookings = loadBookings();
+      const filterS = document.getElementById('filterService');
+      // build filter options
+      const services = Array.from(new Set(bookings.map(b=>b.service))).filter(Boolean);
+      filterS.innerHTML = '<option value="all">All</option>' + services.map(s=>`<option value="${s}">${s}</option>`).join('');
+      const f = filterS.value || 'all';
+      const filtered = bookings.filter(b=> f==='all' ? true : b.service===f);
+      if(filtered.length===0){ list.innerHTML='<div class="muted">No bookings yet.</div>'; return }
+      const table = document.createElement('table');
+      table.innerHTML = '<thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Service</th><th>Created</th><th>Action</th></tr></thead>';
+      const tbody = document.createElement('tbody');
+      filtered.forEach(b=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style="font-family:monospace">${b.id}</td><td>${escapeHtml(b.name)}</td><td>${escapeHtml(b.mobile)}</td><td>${escapeHtml(b.service)}</td><td>${new Date(b.createdAt).toLocaleString()}</td><td><button class="small" onclick="openBooking('${b.id}')">Open</button></td>`;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody); list.appendChild(table);
+    }
+
+    function openBooking(id){
+      const bookings = loadBookings(); const b = bookings.find(x=>x.id===id); if(!b) return alert('Not found');
+      const modal = document.createElement('div');
+      modal.style.position='fixed';modal.style.left=0;modal.style.top=0;modal.style.right=0;modal.style.bottom=0;modal.style.background='rgba(0,0,0,0.4)';modal.style.display='flex';modal.style.alignItems='center';modal.style.justifyContent='center';
+      const box = document.createElement('div');box.className='card';box.style.width='720px';box.style.maxWidth='96%';box.style.maxHeight='90%';box.style.overflow='auto';
+      box.innerHTML = `<h3>Booking ${b.id}</h3>
+        <div style="margin-top:8px"><strong>Name:</strong> ${escapeHtml(b.name)}</div>
+        <div><strong>Mobile:</strong> ${escapeHtml(b.mobile)}</div>
+        <div><strong>Address:</strong> ${escapeHtml(b.address)}</div>
+        <div><strong>Email:</strong> ${escapeHtml(b.email||'—')}</div>
+        <div style="margin-top:8px"><strong>Service:</strong> ${escapeHtml(b.service)}</div>
+        <div style="margin-top:8px"><strong>Details:</strong><div class="muted">${escapeHtml(b.details||'—')}</div></div>
+        <div style="margin-top:8px"><strong>Status:</strong> <select id="statusSelect">${['New','In Progress','Completed','Cancelled'].map(s=>`<option ${b.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div style="margin-top:8px"><label>Reply to customer</label><textarea id="adminReply">${escapeHtml(b.adminReply||'')}</textarea></div>
+        <div style="margin-top:10px;display:flex;gap:8px"><button class="primary" id="saveBtn">Save Reply</button><button class="ghost">Close</button></div>
+      `;
+      modal.appendChild(box); document.body.appendChild(modal);
+      box.querySelectorAll('button').forEach(btn=>{
+        if(btn.innerText==='Close') btn.onclick=()=>{ modal.remove(); }
+      });
+      box.querySelector('#saveBtn').onclick = ()=>{
+        const newStatus = box.querySelector('#statusSelect').value;
+        const reply = box.querySelector('#adminReply').value.trim();
+        // save
+        const bookingsAll = loadBookings();
+        const idx = bookingsAll.findIndex(x=>x.id===id);
+        if(idx>-1){ bookingsAll[idx].status = newStatus; bookingsAll[idx].adminReply = reply; saveBookings(bookingsAll); alert('Saved'); renderAdmin(); modal.remove(); }
+      }
+    }
+
+    function exportCSV(){
+      const bookings = loadBookings(); if(bookings.length===0){ alert('No bookings to export'); return }
+      const rows = [['ID','Name','Mobile','Email','Service','Details','Status','AdminReply','CreatedAt']];
+      bookings.forEach(b=>rows.push([b.id,b.name,b.mobile,b.email,b.service,b.details,b.status,b.adminReply,b.createdAt]));
+      const csv = rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'}); const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'bookings.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    // init
+    ensureAdminShown();
+
+  </script>
+</body>
+</html>
